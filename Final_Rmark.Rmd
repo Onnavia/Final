@@ -1,0 +1,51 @@
+---
+title: "Final"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+install.packages('tidyquant')
+install.packages('lubridate')
+install.packages('timetk')
+
+#1. Import Data
+```{r}
+library(quantmod)
+library(tidyquant)
+library(lubridate)
+library(timetk)
+tickers<-c("SPY", "QQQ", "EEM", "IWM", "EFA", "TLT", "IYR", "GLD" )
+data = new.env()
+getSymbols(tickers, from = '2010-01-01', to = '2019-06-06', auto.assign = TRUE)
+firmList<-merge(Ad(SPY), Ad(QQQ),Ad(EEM), Ad(IWM),Ad(EFA),Ad(TLT),Ad(IYR),Ad(GLD))
+head(firmList)
+colnames(firmList)<-c("SPY", "QQQ", "EEM", "IWM", "EFA", "TLT", "IYR", "GLD")
+head(firmList)
+```
+#2. Calculate weekly and monthly returns using log returns
+# Weekly return
+```{r}
+prices_weekly <- to.weekly(firmList, indexAt = "last", OHLC = FALSE)
+stock_returns_weekly <- na.omit(Return.calculate(prices_weekly, method = "log"))
+head(stock_returns_weekly)
+```
+# Monthly return
+```{r}
+prices_monthly <- to.monthly(firmList, indexAt = "last", OHLC = FALSE)
+stock_returns_monthly <- na.omit(Return.calculate(prices_monthly, method = "log"))
+head(stock_returns_monthly)
+```
+#3. Convert monthly returns into tibble format
+```{r}
+as_tibble(stock_returns_monthly,rownames = 'date')
+```
+#4. Download Fama French 3 factors data and change to digit numbers 
+```{r}
+library(tidyverse)
+retdata = read_csv(("F-F_Research_Data_Factors.CSV"),skip = 6)
+colnames(retdata)<-c("date", "MKT.RF", "SMB", "HML", "RF")
+head(retdata)
+```
